@@ -32,6 +32,7 @@
 # imagefile
 *.img
 *.iso
+*.bin
 
 # Backup File
 *~
