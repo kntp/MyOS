@@ -27,22 +27,38 @@ entry:
 	movw %ax, %ss
 	movw $0x7c00, %sp
 	movw %ax, %ds
+
+# read disk
+	movw $0x0820, %ax
 	movw %ax, %es
+	movb $0, %ch		# cylinder 0
+	movb $0, %dh		# head 0
+	movb $2, %cl		# sector 2
+
+	movb $0x02, %ah		# read disk
+	movb $1, %al		# 1 sector
+	movw $0, %bx
+	movb $0x00, %dl		# drive A
+	int $0x13			# call disk bios
+	jc error
 	
-	movw $msg, %si
+# sleep
+fin:
+	hlt
+	jmp fin
+error:
+	mov $msg, %si
 putloop:
 	movb (%si), %al
 	addw $1, %si
 	cmpb $0, %al
 	je fin
-	movb $0x0e, %ah		# display one char
+	movb $0x0e, %ah		# one char function
 	movw $15, %bx		# color code
 	int $0x10			# call video bios
 	jmp putloop
-fin:
-	hlt
-	jmp fin
 	
+# message
 .data
 msg:
-	.string "Hello, world!\n"
+	.string "\n\nload error\n"

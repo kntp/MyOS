@@ -9,7 +9,7 @@ ipl.o: ipl.s
 
 .PHONY: run
 run:
-	qemu -m 32 -localtime -vga std -fda os.img
+	qemu -m 32 -localtime -vga std -boot a -fda os.img
 
 .PHONY: clean
 clean:
