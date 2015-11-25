@@ -1,0 +1,26 @@
+アセンブル
+ nasm -o boot.img boot.asm
+
+フロッピーイメージの作成
+ # dd if=/dev/zero of=fd_image.img bs=1KiB count=1440
+
+フロッピーイメージへの書き込み
+ dd if=boot.img of=bootfd.img bs=512 count=1 conv=notrunc
+
+ヘキサダンプ
+　hexdump -C bootfd.img
+
+qemu
+ qemu-system-x86_64 -boot a -fda bootfd.img
+ 
+タグ
+ git tag -a tagname -m "comment"
+
+フロッピー
+512byte -> 1sector
+18sector -> 1cylinder
+80cylinder -> 1head
+2head -> 1disk
+
+マウント
+ sudo mount -o uid=1000,gid=1000 -o loop test.img test
