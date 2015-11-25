@@ -15,6 +15,9 @@ qemu
  
 タグ
  git tag -a tagname -m "comment"
+ 
+リモートレポジトリ
+ git remote add [name] [url]
 
 フロッピー
 512byte -> 1sector
