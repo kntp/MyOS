@@ -34,13 +34,22 @@ entry:
 	movb $0, %ch		# cylinder 0
 	movb $0, %dh		# head 0
 	movb $2, %cl		# sector 2
-
+	
+	movw $0, %si
+retry:
 	movb $0x02, %ah		# read disk
 	movb $1, %al		# 1 sector
 	movw $0, %bx
 	movb $0x00, %dl		# drive A
 	int $0x13			# call disk bios
-	jc error
+	jnc fin				# go to fin if no error
+	addw $1, %si		# increment si
+	cmp	$5, %si			# compare si with 5
+	jae error			# if si >= 5 go to error
+	movb $0x00, %ah
+	movb $0x00, %dl		# drive A
+	int $0x13			# reset drive
+	jmp retry
 	
 # sleep
 fin:
