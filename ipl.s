@@ -34,8 +34,8 @@ entry:
 	movb $0, %ch		# cylinder 0
 	movb $0, %dh		# head 0
 	movb $2, %cl		# sector 2
-	
-	movw $0, %si
+readloop:
+	movw $0, %si		# for fail count
 retry:
 	movb $0x02, %ah		# read disk
 	movb $1, %al		# 1 sector
@@ -50,7 +50,13 @@ retry:
 	movb $0x00, %dl		# drive A
 	int $0x13			# reset drive
 	jmp retry
-	
+next:
+	movw %es, %ax		# address +0x200
+	addw $0x0020, %ax
+	movw %ax, %es		# no operand like "addw $0x020, %es"
+	addb $1, %cl		# increment cl
+	cmp $18, %cl		# compare cl with 18
+	jbe readloop		# if cl <= 18 go to readloop
 # sleep
 fin:
 	hlt
