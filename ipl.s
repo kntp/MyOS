@@ -1,5 +1,10 @@
 .code16
 .text
+
+.equ CYLS, 10
+
+# for FAT12 format floppy disk
+
 	jmp entry
 	.byte 0x90
 	.ascii "HELLOIPL"	# name of boot sector
@@ -57,6 +62,14 @@ next:
 	addb $1, %cl		# increment cl
 	cmp $18, %cl		# compare cl with 18
 	jbe readloop		# if cl <= 18 go to readloop
+	movb $1, %cl
+	addb $1, %dh
+	cmp $2, %dh
+	jb readloop			# if dh < 2 go to readloop
+	movb $0, %dh
+	addb $1, %ch
+	cmp $CYLS, %ch		# if ch < CYLS go to readloop
+	jb readloop
 # sleep
 fin:
 	hlt
