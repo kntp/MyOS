@@ -47,7 +47,7 @@ retry:
 	movw $0, %bx
 	movb $0x00, %dl		# drive A
 	int $0x13			# call disk bios
-	jnc fin				# go to fin if no error
+	jnc next			# go to fin if no error
 	addw $1, %si		# increment si
 	cmp	$5, %si			# compare si with 5
 	jae error			# if si >= 5 go to error
@@ -72,8 +72,9 @@ next:
 	jb readloop
 # sleep
 fin:
-	hlt
-	jmp fin
+	jmp 0xC200
+	hlt					# stop cpu
+	jmp fin				# loop
 error:
 	mov $msg, %si
 putloop:
