@@ -27,3 +27,6 @@ qemu
 
 マウント
  sudo mount -o uid=1000,gid=1000 -o loop test.img test
+
+何で'$'いらないの？
+ jmp 0xC200
