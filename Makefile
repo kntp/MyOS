@@ -6,22 +6,20 @@ ipl.bin: ipl.o lnk.ls
 	ld -nostdlib -o ipl.bin ipl.o -Tlnk.ls
 	
 ipl.o: ipl.s
-	as -o ipl.o ipl.s
 
 head.bin: head.o head.ls
 	ld -nostdlib -o head.bin head.o -Thead.ls
 
 head.o: head.s
-	as -o head.o head.s
 
-func.o: func.s func.h
-	as -o func.o func.s
+func.o: func.s
+func.s: func.h
 
-bootpack.o: bootpack.c func.h
-	gcc bootpack.c -nostdlib -Wl,--oformat=binary -c -o bootpack.o
+boot.o: bootpack.c
+bootpack.c: func.h
 
-boot.bin: func.o bootpack.o
-	ld -o boot.bin -e Main --oformat=binary bootpack.o func.o
+boot.bin: func.o boot.o
+	ld -o boot.bin -e Main --oformat=binary boot.o func.o
 
 os.sys: head.bin boot.bin
 	cat head.bin boot.bin > os.sys
@@ -42,3 +40,9 @@ clean:
 	rm -f os.img
 	rm -f *.o
 	rm -f a.out
+
+# suffix rule
+.s.o:
+	as -o $@ $<
+.c.o:
+	gcc $< -nostdlib -Wl,--oformat=binary -c -o $@
