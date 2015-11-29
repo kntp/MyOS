@@ -19,7 +19,7 @@ head:
 	movb	$0x00,	%ah
 	int		$0x10
 
-	movb	$8,		(VMODE)	# memo screen mode
+	movb	$0x08,	(VMODE)	# memo screen mode
 	movw	$320,	(SCRNX)
 	movw	$200,	(SCRNY)
 	movl	$0x000a0000,	(VRAM)
@@ -52,7 +52,7 @@ head:
 	movl	%cr0,			%eax
 	andl	$0x7fffffff,	%eax	# bit31 -> 0 (inhibit paging)
 	orl		$0x00000001,	%eax	# bit0 -> 1 (go to protect mode)
-	movl	%cr0,			%eax
+	movl	%eax,			%cr0
 	jmp		pipelineflash
 pipelineflash:
 	movw	$1*8,			%ax		# R/W segment 32bit
