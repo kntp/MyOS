@@ -1,6 +1,6 @@
-os.img: ipl.bin head.bin
+os.img: ipl.bin os.sys
 	mformat -f 1440 -C -B ipl.bin -i os.img ::
-	mcopy head.bin -i os.img ::
+	mcopy os.sys -i os.img ::
 
 ipl.bin: ipl.o lnk.ls
 	ld -nostdlib -o ipl.bin ipl.o -Tlnk.ls
@@ -13,6 +13,18 @@ head.bin: head.o head.ls
 
 head.o: head.s
 	as -o head.o head.s
+
+func.o: func.s func.h
+	as -o func.o func.s
+
+bootpack.o: bootpack.c func.h
+	gcc bootpack.c -nostdlib -c -o bootpack.o
+
+boot.bin: func.o bootpack.o
+	ld -o boot.bin -e Main --oformat=binary bootpack.o func.o
+
+os.sys: head.bin boot.bin
+	cat head.bin boot.bin > os.sys
 
 .PHONY: run
 run:
