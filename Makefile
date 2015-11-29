@@ -38,7 +38,7 @@ debug:
 clean:
 	rm -f *~
 	rm -f *.bin
-	rm -f harios.sys
+	rm -f os.sys
 	rm -f os.img
 	rm -f *.o
 	rm -f a.out
