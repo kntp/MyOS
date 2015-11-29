@@ -70,24 +70,32 @@ next:
 	addb $1, %ch
 	cmp $CYLS, %ch		# if ch < CYLS go to readloop
 	jb readloop
+
 # sleep
 fin:
+	movb $CYLS, (0x0ff0)
+
 	jmp 0xC200
-	hlt					# stop cpu
-	jmp fin				# loop
 error:
 	mov $msg, %si
-putloop:
+	call print
+_error_fin:
+	hlt					# stop cpu
+	jmp _error_fin		# loop
+
+print:
 	movb (%si), %al
 	addw $1, %si
 	cmpb $0, %al
-	je fin
+	je _print_fin
 	movb $0x0e, %ah		# one char function
 	movw $15, %bx		# color code
 	int $0x10			# call video bios
-	jmp putloop
+	jmp print
+_print_fin:
+	ret
 	
 # message
 .data
 msg:
-	.string "\n\nload error\n"
+	.string "load error\n"

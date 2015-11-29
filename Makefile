@@ -18,7 +18,7 @@ func.o: func.s func.h
 	as -o func.o func.s
 
 bootpack.o: bootpack.c func.h
-	gcc bootpack.c -nostdlib -c -o bootpack.o
+	gcc bootpack.c -nostdlib -Wl,--oformat=binary -c -o bootpack.o
 
 boot.bin: func.o bootpack.o
 	ld -o boot.bin -e Main --oformat=binary bootpack.o func.o
@@ -30,11 +30,15 @@ os.sys: head.bin boot.bin
 run:
 	qemu -m 32 -localtime -vga std -boot a -fda os.img
 
+.PHONY: debug
+debug:
+	qemu -s -S -m 32 -localtime -vga std -boot a -fda os.img -redir tcp:5555:127.0.0.1:1234 &
+
 .PHONY: clean
 clean:
 	rm -f *~
 	rm -f *.bin
-	rm -f harios.sys
+	rm -f os.sys
 	rm -f os.img
 	rm -f *.o
 	rm -f a.out
