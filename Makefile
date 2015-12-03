@@ -6,13 +6,13 @@ os.sys: head.bin boot.bin
 	cat head.bin boot.bin > os.sys
 
 ipl.bin: ipl.o lnk.ls
-	ld -nostdlib -o ipl.bin ipl.o -Tlnk.ls
+	ld -nostdlib -o ipl.bin ipl.o -Tlnk.ls -Map=ipl.map
 	
 head.bin: head.o head.ls
-	ld -nostdlib -o head.bin head.o -Thead.ls
+	ld -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
 boot.bin: func.o boot.o
-	ld -o boot.bin -e Main --oformat=binary boot.o func.o
+	ld -nostdlib -o boot.bin -e Main --oformat=binary boot.o func.o -Map=boot.map
 
 ipl.o: ipl.s
 head.o: head.s
@@ -31,12 +31,12 @@ debug:
 
 .PHONY: clean
 clean:
-	rm -f *~
-	rm -f *.bin
 	rm -f os.sys
 	rm -f os.img
+	rm -f *~
+	rm -f *.bin
 	rm -f *.o
-	rm -f a.out
+	rm -f *.map
 
 # suffix rule
 .s.o:
