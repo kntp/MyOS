@@ -21,6 +21,10 @@ qemu
 リモートレポジトリ
  git remote add [name] [url]
 
+チェックアウト
+ git checkout [tag] -> タグの状態に移動
+ git checkout [master] -> ブランチの最新に移動
+
 フロッピー
 512byte -> 1sector
 18sector -> 1cylinder
