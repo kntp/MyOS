@@ -8,6 +8,8 @@
 *.gch
 *.pch
 
+*.map
+
 # Libraries
 *.lib
 *.a
