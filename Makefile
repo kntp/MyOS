@@ -11,15 +11,17 @@ ipl.bin: ipl.o lnk.ls
 head.bin: head.o head.ls
 	ld -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
-boot.bin: func.o boot.o
-	ld -nostdlib -o boot.bin -e Main --oformat=binary boot.o func.o -Map=boot.map
+boot.bin: func.o boot.o startup.o
+	ld -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
+	boot.o func.o -Map=boot.map
 
 ipl.o: ipl.s
 head.o: head.s
 func.o: func.s
 func.s: func.h
 boot.o: boot.c
-bootpack.c: func.h
+boot.c: func.h
+startup.o: startup.c
 
 .PHONY: run
 run:
