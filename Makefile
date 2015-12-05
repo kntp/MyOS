@@ -15,16 +15,12 @@ boot.bin: func.o boot.o startup.o
 	ld -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
 	boot.o func.o -Map=boot.map
 
-ipl.o: ipl.s
-head.o: head.s
 func.o: func.s
 func.s: func.h
-boot.o: boot.c
 boot.c: func.h
-startup.o: startup.c
 
 .PHONY: run
-run:
+run: os.img
 	qemu -m 32 -localtime -vga std -boot a -fda os.img
 
 .PHONY: debug
