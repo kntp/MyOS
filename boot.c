@@ -21,11 +21,23 @@ void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
 
+struct BOOTINFO {
+	char cyls, leds, vmode, reserve;
+	short scrnx, scrny;
+	char *vram;
+};
+
 void Main() {
-	int xsize = 320, ysize = 200;
-	char *vram = (char *)0xa0000;
+	char *vram;
+	int xsize, ysize;
+	struct BOOTINFO *binfo;
 
 	init_palette();
+
+	binfo = (struct BOOTINFO *)0x0ff0;
+	xsize = binfo->scrnx;
+	ysize = binfo->scrny;
+	vram = binfo->vram;
 
 	boxfill8(vram, xsize, COL8_008484, 0, 0, xsize - 1, ysize - 29);
 	boxfill8(vram, xsize, COL8_C6C6C6, 0, ysize - 28, xsize - 1, ysize - 28);
