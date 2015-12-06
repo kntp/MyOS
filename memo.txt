@@ -14,6 +14,9 @@ qemu
  qemu-system-x86_64 -boot a -fda bootfd.img
  qemu -monitor stdio
  
+gdb
+ gdb -x [command file]
+ 
 タグ
  git tag -a tagname -m "comment"
  git push origin [tag name]
