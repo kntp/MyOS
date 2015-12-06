@@ -85,13 +85,13 @@ pipelineflash:
 
 # start bootpack
 	movl	$BOTPAK,		%ebx
-	movl	$0x11a8,		%ecx
+	movl	16(%ebx),		%ecx
 	addl	$3,				%ecx	# ecx += 3
 	shrl	$2,				%ecx	# ecx /= 4
 	jz		skip					# no data to send
-	movl	$0x10c8,		%esi	# src
+	movl	20(%ebx),		%esi	# src
 	addl	%ebx,			%esi
-	movl	$0x00310000,	%edi	# dst
+	movl	12(%ebx),		%edi	# dst
 	call	memcpy
 skip:
 	movl	$0x00310000,	%edi	# stack def val
