@@ -37,3 +37,7 @@ qemu
 
 何で'$'いらないの？
  jmp 0xC200
+
+マシン語表示
+ $ objdump -d -S xxx.o
+
