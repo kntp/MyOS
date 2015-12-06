@@ -95,7 +95,7 @@ pipelineflash:
 	call	memcpy
 skip:
 	movl	$0x00310000,	%edi	# stack def val
-	ljmpl	$2*8,			$0x00000000
+	ljmpl	$2*8,			$0x0000001b
 
 #######################################
 # function
