@@ -12,6 +12,7 @@
 
 qemu
  qemu-system-x86_64 -boot a -fda bootfd.img
+ qemu -monitor stdio
  
 タグ
  git tag -a tagname -m "comment"
