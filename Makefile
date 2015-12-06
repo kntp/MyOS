@@ -11,9 +11,9 @@ ipl.bin: ipl.o lnk.ls
 head.bin: head.o head.ls
 	ld -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
-boot.bin: func.o boot.o startup.o hankaku.o
+boot.bin: func.o boot.o startup.o hankaku.o lib.o
 	ld -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
-	boot.o func.o hankaku.o -Map=boot.map
+	boot.o func.o hankaku.o lib.o -Map=boot.map
 
 func.o: func.s
 func.s: func.h

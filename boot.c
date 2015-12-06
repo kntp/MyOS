@@ -17,6 +17,8 @@
 #define	COL8_008484		14
 #define	COL8_848484		15
 
+extern int lsprintf(char *str, const char *format, ...);
+
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
@@ -32,12 +34,17 @@ struct BOOTINFO {
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
+	char s[100];
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
+	putfonts8_asc(binfo->vram, binfo->scrnx, 9, 9, COL8_000000, "Hello, World!");
 	putfonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "Hello, World!");
 
+	lsprintf(s, "scrnx = %d", binfo->scrny);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
+	
 	while(1) {
 		io_hlt();
 	}
