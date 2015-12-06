@@ -6,16 +6,17 @@ os.sys: head.bin boot.bin
 	cat head.bin boot.bin > os.sys
 
 ipl.bin: ipl.o lnk.ls
-	ld -nostdlib -o ipl.bin ipl.o -Tlnk.ls -Map=ipl.map
+	ld -melf_i386 -nostdlib -o ipl.bin ipl.o -Tlnk.ls -Map=ipl.map
 	
 head.bin: head.o head.ls
-	ld -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
+	ld -melf_i386 -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
 boot.bin: func.o boot.o startup.o
-	ld -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
-	boot.o func.o -Map=boot.map
+	ld -melf_i386 -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
+	boot.o func.o startup.o -Map=boot.map
 
 func.o: func.s
+
 func.s: func.h
 boot.c: func.h
 
@@ -38,6 +39,6 @@ clean:
 
 # suffix rule
 .s.o:
-	as -o $@ $<
+	as -32 -o $@ $<
 .c.o:
-	gcc $< -nostdlib -Wl,--oformat=binary -c -o $@
+	gcc $< -m32 -nostdlib -Wl,--oformat=binary -c -o $@

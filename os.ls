@@ -1,8 +1,6 @@
 OUTPUT_FORMAT(binary)
 OUTPUT_ARCH(i386)
 
-INPUT(startup.o)
-
 SECTIONS {
 	.head 0x0 :
 	{
