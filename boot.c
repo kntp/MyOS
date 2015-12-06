@@ -22,6 +22,7 @@ void set_palette(int start, int end, unsigned char *rgb);
 void boxfill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0, int x1, int y1);
 void init_screen(char *vram, int x, int y);
 void putfont8(char *vram, int xsize, int x, int y, char c, char *font);
+void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s);
 
 struct BOOTINFO {
 	char cyls, leds, vmode, reserve;
@@ -31,16 +32,11 @@ struct BOOTINFO {
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
-	extern char hankaku[4096];
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-	putfont8(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, hankaku + 'A' * 16);
-	putfont8(binfo->vram, binfo->scrnx, 16, 8, COL8_FFFFFF, hankaku + 'B' * 16);
-	putfont8(binfo->vram, binfo->scrnx, 24, 8, COL8_FFFFFF, hankaku + 'C' * 16);
-	putfont8(binfo->vram, binfo->scrnx, 40, 8, COL8_FFFFFF, hankaku + '1' * 16);
-	putfont8(binfo->vram, binfo->scrnx, 48, 8, COL8_FFFFFF, hankaku + '2' * 16);
-	putfont8(binfo->vram, binfo->scrnx, 56, 8, COL8_FFFFFF, hankaku + '3' * 16);
+
+	putfonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "Hello, World!");
 
 	while(1) {
 		io_hlt();
@@ -125,6 +121,18 @@ void init_screen(char *vram, int x, int y)
 	boxfill8(vram, x, COL8_848484, x - 47, y - 23, x - 47, y - 4);
 	boxfill8(vram, x, COL8_FFFFFF, x - 47, y - 3, x - 4, y - 3);
 	boxfill8(vram, x, COL8_FFFFFF, x - 3, y - 24, x - 3, y - 3);
+
+	return;
+}
+
+void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s)
+{
+	extern char hankaku[4096];
+
+	for(; *s != 0x00; s++) {
+		putfont8(vram, xsize, x, y, c, hankaku + *s * 16);
+		x += 8;
+	}
 
 	return;
 }
