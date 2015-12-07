@@ -1,5 +1,6 @@
 /*#include "prot.h"*/
 
+void strcls(char *);
 void int2hex(char *, int);
 void int2dec(char *, int);
 
