@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "func.h"
 
 #define	COL8_000000		0
@@ -34,7 +35,7 @@ struct BOOTINFO {
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
-	char s[100];
+	char s[20]/*= {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}*/;
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
@@ -42,7 +43,7 @@ void Main() {
 	putfonts8_asc(binfo->vram, binfo->scrnx, 9, 9, COL8_000000, "Hello, World!");
 	putfonts8_asc(binfo->vram, binfo->scrnx, 8, 8, COL8_FFFFFF, "Hello, World!");
 
-	lsprintf(s, "scrnx = %d", binfo->scrny);
+	sprintf(s, "scrnx = %d", binfo->scrny);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
 	
 	while(1) {

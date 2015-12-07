@@ -1,3 +1,6 @@
+CFLAGS = -g -nostdlib -Wl,--oformat=binary -I./include
+LDLIBS = -L./lib -lgoc
+
 os.img: ipl.bin os.sys
 	mformat -f 1440 -C -B ipl.bin -i os.img ::
 	mcopy os.sys -i os.img ::
@@ -11,9 +14,9 @@ ipl.bin: ipl.o lnk.ls
 head.bin: head.o head.ls
 	ld -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
-boot.bin: func.o boot.o startup.o hankaku.o lib.o
+boot.bin: func.o boot.o startup.o hankaku.o
 	ld -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
-	boot.o func.o hankaku.o lib.o -Map=boot.map
+	boot.o func.o hankaku.o $(LDLIBS) -Map=boot.map
 
 func.o: func.s
 func.s: func.h
@@ -40,4 +43,4 @@ clean:
 .s.o:
 	as -o $@ $<
 .c.o:
-	gcc $< -nostdlib -Wl,--oformat=binary -c -o $@
+	gcc $< $(CFLAGS) -c -o $@

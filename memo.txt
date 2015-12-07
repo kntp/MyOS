@@ -44,3 +44,5 @@ gdb
 マシン語表示
  $ objdump -d -S xxx.o
 
+sjis -> utf8
+ nkf -w -Lu
