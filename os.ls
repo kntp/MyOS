@@ -13,7 +13,7 @@ SECTIONS
         LONG(SIZEOF(.data))   /* 16 : .dataサイズ */
         LONG(LOADADDR(.data)) /* 20 : .dataの初期値列のファイル位置 */
         LONG(0xE9000000)      /* 24 : 0xE9000000 */
-        LONG(Main - 0x20) /* 28 : エントリアドレス - 0x20 */
+        LONG(StartUp - 0x20) /* 28 : エントリアドレス - 0x20 */
         LONG(0)               /* 32 : heap領域（malloc領域）開始アドレス */
     }
 
