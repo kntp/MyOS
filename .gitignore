@@ -15,6 +15,7 @@
 *.a
 *.la
 *.lo
+!libgoc.a
 
 # Shared objects (inc. Windows DLLs)
 *.dll

@@ -1,3 +1,6 @@
+CFLAGS = -g -nostdlib -Wl,--oformat=binary -I./include
+LDLIBS = -L./lib -lgoc
+
 os.img: ipl.bin os.sys
 	mformat -f 1440 -C -B ipl.bin -i os.img ::
 	mcopy os.sys -i os.img ::

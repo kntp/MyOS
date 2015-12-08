@@ -14,6 +14,9 @@ qemu
  qemu-system-x86_64 -boot a -fda bootfd.img
  qemu -monitor stdio
  
+gdb
+ gdb -x [command file]
+ 
 タグ
  git tag -a tagname -m "comment"
  git push origin [tag name]
@@ -37,3 +40,9 @@ qemu
 
 何で'$'いらないの？
  jmp 0xC200
+
+マシン語表示
+ $ objdump -d -S xxx.o
+
+sjis -> utf8
+ nkf -w -Lu

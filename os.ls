@@ -1,39 +1,30 @@
 OUTPUT_FORMAT(binary)
 OUTPUT_ARCH(i386)
 
-SECTIONS {
-	.head 0x0 :
-	{
-		LONG((ADDR(.bss) + SIZEOF(.bss) + 0xfff) & ~ 0xfff)
-		BYTE(0x4f) BYTE(0x53) BYTE(0x4c) BYTE(0x69)
-		LONG(0x0)
-		LONG(ADDR(.data))
-		LONG(SIZEOF(.data))
-		LONG(LOADADDR(.data))
-		LONG(0xe9000000)
-		LONG(StartUp - 0x20)
-		LONG((ADDR(.bss) + SIZEOF(.bss) + 0xf) & ~ 0xf)
-	}
+INPUT(startup.o)
 
-	.text ADDR(.head) + SIZEOF(.head) :
+SECTIONS
+{
+    .head 0x0 : {
+        LONG(64 * 1024)  /*  0 : stack+.data+heap の大きさ（4KBの倍数） */
+        LONG(0x69726148)      /*  4 : シグネチャ "Hari" */
+        LONG(0)               /*  8 : mmarea の大きさ（4KBの倍数） */
+        LONG(0x310000)        /* 12 : スタック初期値＆.data転送先 */
+        LONG(SIZEOF(.data))   /* 16 : .dataサイズ */
+        LONG(LOADADDR(.data)) /* 20 : .dataの初期値列のファイル位置 */
+        LONG(0xE9000000)      /* 24 : 0xE9000000 */
+        LONG(Main - 0x20) /* 28 : エントリアドレス - 0x20 */
+        LONG(0)               /* 32 : heap領域（malloc領域）開始アドレス */
+    }
 
-		SUBALIGN (1)
-	{
-		*(.text)
-	}
+    .text : { *(.text) }
 
-	.data 0x00000400 :
-		AT ( LOADADDR(.text) + SIZEOF(.text) ) SUBALIGN (4)
-	{
-		*(.data)
-		*(.rodata*)
-	}
+    .data 0x310000 : AT ( ADDR(.text) + SIZEOF(.text) ) {
+        *(.data)
+        *(.rodata*)
+        *(.bss)
+    }
 
-	.bss :
-		AT ( LOADADDR(.data) + SIZEOF(.data) ) SUBALIGN (4)
-	{
-		*(.bss)
-	}
+    /DISCARD/ : { *(.eh_frame) }
 
-	/DISCARD/ : { *(*) }
 }
