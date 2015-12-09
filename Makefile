@@ -8,8 +8,8 @@ os.img: ipl.bin os.sys
 os.sys: head.bin boot.bin
 	cat head.bin boot.bin > os.sys
 
-ipl.bin: ipl.o lnk.ls
-	ld -nostdlib -o ipl.bin ipl.o -Tlnk.ls -Map=ipl.map
+ipl.bin: ipl.o ipl.ls
+	ld -nostdlib -o ipl.bin ipl.o -Tipl.ls -Map=ipl.map
 	
 head.bin: head.o head.ls
 	ld -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
