@@ -18,7 +18,7 @@
 #define	COL8_008484		14
 #define	COL8_848484		15
 
-extern int lsprintf(char *str, const char *format, ...);
+extern int sprintf(char *str, const char *format, ...);
 
 void init_palette(void);
 void set_palette(int start, int end, unsigned char *rgb);
