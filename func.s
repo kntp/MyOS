@@ -4,6 +4,7 @@
 .globl io_load_eflags, io_store_eflags
 .globl io_in8, io_in16, io_in32
 .globl io_out8, io_out16, io_out32
+.globl load_gdtr, load_idtr
 
 .text
 
@@ -81,4 +82,16 @@ io_out16:
 	outl	%eax, %dx
 	ret
 
-	
+#
+load_gdtr:
+	movw	4(%esp), %ax
+	movw	%ax, 6(%esp)
+	lgdt	6(%esp)
+	ret
+
+#
+load_idtr:
+	movw	4(%esp), %ax
+	movw	%ax, 6(%esp)
+	lidt	6(%esp)
+	ret
