@@ -18,13 +18,13 @@ CC      = gcc
 GOLIB    = ar
 DELE     = rm -rf
 
-CFLAGS = -nostdlib
+CFLAGS = -m32 -nostdlib
 
 # 以上の項目はあなたのディレクトリ構成にあわせて書き換える
 
 	
 lib$(TARGET).a : $(OBJS) Makefile
-	$(GOLIB) -rv $@ $(OBJS)
+	$(GOLIB) rcs $@ $(OBJS)
 
 clean :
 	$(DELE) *.o

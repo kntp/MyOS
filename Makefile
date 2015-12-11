@@ -8,15 +8,15 @@ os.img: ipl.bin os.sys
 os.sys: head.bin boot.bin
 	cat head.bin boot.bin > os.sys
 
-ipl.bin: ipl.o lnk.ls
-	ld -melf_i386 -nostdlib -o ipl.bin ipl.o -Tlnk.ls -Map=ipl.map
+ipl.bin: ipl.o ipl.ls
+	ld -melf_i386 -nostdlib -o ipl.bin ipl.o -Tipl.ls -Map=ipl.map
 	
 head.bin: head.o head.ls
 	ld -melf_i386 -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
 boot.bin: func.o boot.o startup.o hankaku.o
-	ld $(LDLIBS) -melf_i386 -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
-	boot.o func.o hankaku.o -Map=boot.map
+	ld -melf_i386 -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
+	boot.o $(LDLIBS) func.o hankaku.o -Map=boot.map
 
 func.o: func.s
 
