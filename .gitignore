@@ -39,3 +39,8 @@
 
 # Backup File
 *~
+
+# eclipse
+.cproject
+.project
+.settings/
