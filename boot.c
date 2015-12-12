@@ -2,6 +2,7 @@
 #include "func.h"
 #include "graphic.h"
 #include "dsctbl.h"
+#include "int.h"
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
@@ -10,6 +11,8 @@ void Main() {
 	int mx, my;
 
 	init_gdtidt();
+	init_pic();
+
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
 
