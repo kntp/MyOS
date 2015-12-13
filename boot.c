@@ -8,7 +8,7 @@ void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
 	char s[40];
 	char mcursor[16 * 16];
-	int mx, my;
+	int mx, my, i;
 
 	init_gdtidt();
 	init_pic();
@@ -28,7 +28,17 @@ void Main() {
 	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
 
 	while(1) {
-		io_hlt();
+		io_cli();
+		if(keybuf.flag == 0) {
+			io_stihlt();
+		}else {
+			i = keybuf.data;
+			keybuf.flag = 0;
+			io_sti();
+			sprintf(s, "%02X", i);
+			boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+			putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+		}
 	}
 }
 

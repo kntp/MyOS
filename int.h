@@ -26,4 +26,10 @@ void inthandler21(int *);
 void inthandler27(int *);
 void inthandler2c(int *);
 
+struct KEYBUF {
+	unsigned char data, flag;
+};
+
+extern struct KEYBUF keybuf;
+
 #endif /* INT_H_ */
