@@ -5,6 +5,8 @@
  *      Author: koji
  */
 #include "func.h"
+#include "dsctbl.h"
+#include "graphic.h"
 #include "int.h"
 
 void init_pic(void)
@@ -24,6 +26,41 @@ void init_pic(void)
 
 	io_out8(PIC0_IMR, 0xfb);	/* disable all interrupt except PIC1 */
 	io_out8(PIC1_IMR, 0xff);	/* disable all interrupt */
+
+	return;
+}
+
+/* interrupt from PS/2 keyboard */
+void inthandler21(int *esp)
+{
+	struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
+
+	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 25);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
+
+	while(1){
+		io_hlt();
+	}
+}
+
+/* interrupt from PS/2 mouse */
+void inthandler2c(int *esp)
+{
+	struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
+
+	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 25);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 2C (IRQ-12) : PS/2 mouse");
+
+	while(1){
+		io_hlt();
+	}
+}
+
+/* for Athlon64X2 chipset incomplete interrupt. */
+/* this interrupt handler does nothing */
+void inthandler27(int *esp)
+{
+	io_out8(PIC0_OCW2, 0x67);	/* send PIC "accept IRQ-07" */
 
 	return;
 }

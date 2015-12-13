@@ -22,6 +22,8 @@
 #define PIC1_ICW4	0x00a1
 
 void init_pic(void);
-
+void inthandler21(int *);
+void inthandler27(int *);
+void inthandler2c(int *);
 
 #endif /* INT_H_ */

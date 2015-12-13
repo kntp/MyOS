@@ -12,15 +12,10 @@ void Main() {
 
 	init_gdtidt();
 	init_pic();
+	io_sti();	/* after init IDT/PIC, enable CPU interrupt */
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
-
-	putfonts8_asc(binfo->vram, binfo->scrnx, 9, 21, COL8_000000, "Hello, World!");
-	putfonts8_asc(binfo->vram, binfo->scrnx, 8, 20, COL8_FFFFFF, "Hello, World!");
-
-	sprintf(s, "scrnx = %d", binfo->scrny);
-	putfonts8_asc(binfo->vram, binfo->scrnx, 16, 64, COL8_FFFFFF, s);
 
 	mx = (binfo->scrnx - 16) / 2;
 	my = (binfo->scrny - 28 -16) /2;
@@ -28,7 +23,10 @@ void Main() {
 	putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
 	sprintf(s, "(%d, %d)", mx, my);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
-	
+
+	io_out8(PIC0_IMR, 0xf9);		/* allow PIC1 and keyboard(11111001) */
+	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
+
 	while(1) {
 		io_hlt();
 	}
