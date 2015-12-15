@@ -3,11 +3,13 @@
 #include "graphic.h"
 #include "dsctbl.h"
 #include "int.h"
+#include "fifo.h"
+
+extern struct FIFO8 keyfifo;
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
-	char s[40];
-	char mcursor[16 * 16];
+	char s[40], mcursor[256], keybuf[32];
 	int mx, my, i;
 
 	init_gdtidt();
@@ -27,17 +29,14 @@ void Main() {
 	io_out8(PIC0_IMR, 0xf9);		/* allow PIC1 and keyboard(11111001) */
 	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
 
+	fifo8_init(&keyfifo, 32, keybuf);
+
 	while(1) {
 		io_cli();
-		if(keybuf.len == 0) {
+		if(fifo8_status(&keyfifo) == 0) {
 			io_stihlt();
 		}else {
-			i = keybuf.data[keybuf.next_r];
-			keybuf.len--;
-			keybuf.next_r++;
-			if(keybuf.next_r == 32) {
-				keybuf.next_r = 0;
-			}
+			i = fifo8_get(&keyfifo);
 			io_sti();
 			sprintf(s, "%02X", i);
 			boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
