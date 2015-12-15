@@ -28,7 +28,7 @@ void inthandler2c(int *);
 
 struct KEYBUF {
 	unsigned char data[32];
-	int next;
+	int next_r, next_w, len;
 };
 
 extern struct KEYBUF keybuf;
