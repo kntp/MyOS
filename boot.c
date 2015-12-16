@@ -5,7 +5,51 @@
 #include "int.h"
 #include "fifo.h"
 
+#define PORT_KEYDAT				0x0060
+#define PORT_KEYSTA				0x0064
+#define PORT_KEYCMD				0x0064
+#define KEYSTA_SEND_NOTREADY	0x02
+#define KEYCMD_WRITE_MODE		0x60
+#define KBC_MODE				0x47
+
+#define KEYCMD_SENDTO_MOUSE		0xd4
+#define MOUSECMD_ENABLE			0xf4
+
 extern struct FIFO8 keyfifo;
+
+void wait_KBC_sendready(vodi)
+{
+	/* wait until KBC can send */
+	while(1){
+		if((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
+			break;
+		}
+	}
+
+	return;
+}
+
+void init_keyboard(void)
+{
+	/* init keyboard controller */
+	wait_KBC_sendready();
+	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
+	wait_KBC_sendready();
+	io_out8(PORT_KEYDAT, KBC_MODE);
+
+	return;
+}
+
+void enable_mouse(void)
+{
+	/* enable mouse */
+	wait_KBC_sendready();
+	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
+	wait_KBC_sendready();
+	io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
+
+	return;		/* recieve ACK if success */
+}
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
@@ -15,6 +59,11 @@ void Main() {
 	init_gdtidt();
 	init_pic();
 	io_sti();	/* after init IDT/PIC, enable CPU interrupt */
+	fifo8_init(&keyfifo, 32, keybuf);
+	io_out8(PIC0_IMR, 0xf9);		/* allow PIC1 and keyboard(11111001) */
+	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
+
+	init_keyboard();
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
@@ -26,10 +75,7 @@ void Main() {
 	sprintf(s, "(%d, %d)", mx, my);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
-	io_out8(PIC0_IMR, 0xf9);		/* allow PIC1 and keyboard(11111001) */
-	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
-
-	fifo8_init(&keyfifo, 32, keybuf);
+	enable_mouse();
 
 	while(1) {
 		io_cli();
