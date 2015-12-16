@@ -13,6 +13,7 @@
 #define PORT_KEYDAT 0x0060
 
 struct FIFO8 keyfifo;
+struct FIFO8 mousefifo;
 
 void init_pic(void)
 {
@@ -51,14 +52,15 @@ void inthandler21(int *esp)
 /* interrupt from PS/2 mouse */
 void inthandler2c(int *esp)
 {
-	struct BOOTINFO *binfo = (struct BOOTINFO *)ADR_BOOTINFO;
+	unsigned char data;
 
-	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 25);
-	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 2C (IRQ-12) : PS/2 mouse");
+	io_out8(PIC1_OCW2, 0x64);
+	io_out8(PIC0_OCW2, 0x62);
+	data = io_in8(PORT_KEYDAT);
 
-	while(1){
-		io_hlt();
-	}
+	fifo8_put(&mousefifo, data);
+
+	return;
 }
 
 /* for Athlon64X2 chipset incomplete interrupt. */
