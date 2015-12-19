@@ -4,18 +4,11 @@
 #include "dsctbl.h"
 #include "int.h"
 #include "fifo.h"
+#include "keyboard.h"
+#include "mouse.h"
 
 extern struct FIFO8 keyfifo;
 extern struct FIFO8 mousefifo;
-
-struct MOUSE_DEC {
-	unsigned char buf[3], phase;
-	int x, y, btn;
-};
-
-void enable_mouse(struct MOUSE_DEC *mdec);
-void init_keyboard(void);
-int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
@@ -99,89 +92,4 @@ void Main() {
 	}
 }
 
-#define PORT_KEYDAT				0x0060
-#define PORT_KEYSTA				0x0064
-#define PORT_KEYCMD				0x0064
-#define KEYSTA_SEND_NOTREADY	0x02
-#define KEYCMD_WRITE_MODE		0x60
-#define KBC_MODE				0x47
-
-void wait_KBC_sendready(vodi)
-{
-	/* wait until KBC can send */
-	while(1){
-		if((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
-			break;
-		}
-	}
-
-	return;
-}
-
-void init_keyboard(void)
-{
-	/* init keyboard controller */
-	wait_KBC_sendready();
-	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
-	wait_KBC_sendready();
-	io_out8(PORT_KEYDAT, KBC_MODE);
-
-	return;
-}
-
-#define KEYCMD_SENDTO_MOUSE		0xd4
-#define MOUSECMD_ENABLE			0xf4
-
-void enable_mouse(struct MOUSE_DEC *mdec)
-{
-	/* enable mouse */
-	wait_KBC_sendready();
-	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
-	wait_KBC_sendready();
-	io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
-	/* ACK is sent if success */
-	mdec->phase = 0;
-
-	return;
-}
-
-int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat)
-{
-	if(mdec->phase == 0) {
-		/* waiting mouse 0xfa */
-		if(dat == 0xfa) {
-			mdec->phase = 1;
-		}
-		return 0;
-	}else if(mdec->phase == 1) {
-		/* waiting mouse 1st byte */
-		if((dat & 0xc8) == 0x08) {
-			mdec->buf[0] = dat;
-			mdec->phase = 2;
-		}
-		return 0;
-	}else if(mdec->phase == 2) {
-		/* waiting mouse 2nd byte */
-		mdec->buf[1] = dat;
-		mdec->phase = 3;
-		return 0;
-	}else if(mdec->phase == 3) {
-		/* waiting mouse 3rd byte */
-		mdec->buf[2] = dat;
-		mdec->phase = 1;
-		mdec->btn = mdec->buf[0] & 0x07;
-		mdec->x = mdec->buf[1];
-		mdec->y = mdec->buf[2];
-		if((mdec->buf[0] & 0x10) != 0) {
-			mdec->x |= 0xffffff00;
-		}
-		if((mdec->buf[0] & 0x20) != 0) {
-			mdec->y |= 0xffffff00;
-		}
-		mdec->y = - mdec->y;
-		return 1;
-	}
-
-	return -1; /* can not be reached */
-}
 
