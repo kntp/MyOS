@@ -10,6 +10,9 @@
 extern struct FIFO8 keyfifo;
 extern struct FIFO8 mousefifo;
 
+unsigned int memtest(unsigned int start, unsigned int end);
+unsigned int memtest_sub(unsigned int start, unsigned int end);
+
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
 	char s[40], mcursor[256], keybuf[32], mousebuf[128];
@@ -25,6 +28,7 @@ void Main() {
 	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
 
 	init_keyboard();
+	enable_mouse(&mdec);
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
@@ -36,7 +40,9 @@ void Main() {
 	sprintf(s, "(%d, %d)", mx, my);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
-	enable_mouse(&mdec);
+	i = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
+	sprintf(s, "memory %dMB", i);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
 
 	while(1) {
 		io_cli();
@@ -92,4 +98,62 @@ void Main() {
 	}
 }
 
+#define EFLAGS_AC_BIT		0x00040000
+#define CR0_CACHE_DISABLE	0x60000000
 
+unsigned int memtest(unsigned int start, unsigned int end)
+{
+	char flg486 = 0;
+	unsigned int eflag, cr0, i;
+
+	/* check 386 or 486 */
+	eflag = io_load_eflags();
+	eflag |= EFLAGS_AC_BIT;	/* AC-bit = 1 */
+	io_store_eflags(eflag);
+	eflag = io_load_eflags();
+	if((eflag & EFLAGS_AC_BIT) != 0) {	/* 386, AC turns to 0 */
+		flg486 = 1;
+	}
+	eflag &= ~EFLAGS_AC_BIT; /* AC-bit = 0 */
+	io_store_eflags(eflag);
+
+	if(flg486 != 0) {
+		cr0 = load_cr0();
+		cr0 |= CR0_CACHE_DISABLE;
+		store_cr0(cr0);
+	}
+
+	i = memtest_sub(start, end);
+
+	if(flg486 != 0) {
+		cr0 = load_cr0();
+		cr0 &= ~CR0_CACHE_DISABLE;
+		store_cr0(cr0);
+	}
+
+	return i;
+}
+
+unsigned int memtest_sub(unsigned int start, unsigned int end)
+{
+	unsigned int i, *p, old, pat0 = 0xaa55aa55, pat1 = 0x55aa55aa;
+
+	for(i = start; i < end; i += 4) {
+		p = (unsigned int *)i;
+		old = *p;
+		*p = pat0;
+		*p ^= 0xffffffff;
+		if(*p != pat1) {
+not_memory:
+			*p = old;
+			break;
+		}
+		*p ^= 0xffffffff;
+		if(*p != pat0) {
+			goto not_memory;
+		}
+		*p = old;
+	}
+
+	return i;
+}

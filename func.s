@@ -5,6 +5,7 @@
 .globl io_in8, io_in16, io_in32
 .globl io_out8, io_out16, io_out32
 .globl load_gdtr, load_idtr
+.globl load_cr0, store_cr0
 .globl asm_inthandler21, asm_inthandler27, asm_inthandler2c
 .extern inthandler21, inthandler27, inthandler2c
 
@@ -96,6 +97,17 @@ load_idtr:
 	movw	4(%esp), %ax
 	movw	%ax, 6(%esp)
 	lidt	6(%esp)
+	ret
+
+#
+load_cr0:
+	movl	%cr0, %eax
+	ret
+
+#
+store_cr0:
+	movl	4(%esp), %eax
+	movl	%eax, %cr0
 	ret
 
 asm_inthandler21:
