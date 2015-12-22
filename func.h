@@ -17,4 +17,6 @@ void asm_inthandler21(void);
 void asm_inthandler27(void);
 void asm_inthandler2c(void);
 
+unsigned int memtest_sub(unsigned int start, unsigned int end);
+
 #endif // __FUNC_H__
