@@ -5,7 +5,9 @@
 .globl io_in8, io_in16, io_in32
 .globl io_out8, io_out16, io_out32
 .globl load_gdtr, load_idtr
+.globl load_cr0, store_cr0
 .globl asm_inthandler21, asm_inthandler27, asm_inthandler2c
+.globl memtest_sub
 .extern inthandler21, inthandler27, inthandler2c
 
 .text
@@ -98,6 +100,17 @@ load_idtr:
 	lidt	6(%esp)
 	ret
 
+#
+load_cr0:
+	movl	%cr0, %eax
+	ret
+
+#
+store_cr0:
+	movl	4(%esp), %eax
+	movl	%eax, %cr0
+	ret
+
 asm_inthandler21:
 	pushw	%es
 	pushw	%ds
@@ -145,3 +158,37 @@ asm_inthandler2c:
 	popw	%ds
 	popw	%es
 	iret
+
+memtest_sub:
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	movl	$0xaa55aa55, %esi		# pat0
+	movl	$0x55aa55aa, %edi		# pat1
+	movl	16(%esp), %eax			# i = start;
+mts_loop:
+	movl	%eax, %ebx
+	addl	$0xffc, %ebx
+	movl	(%ebx), %edx
+	movl	%esi, (%ebx)
+	xorl	$0xffffffff, (%ebx)
+	cmp		(%ebx), %edi
+	jne		mts_fin
+	xorl	$0xffffffff, (%ebx)
+	cmp		(%ebx), %esi
+	jne		mts_fin
+	movl	%edx, (%ebx)
+	addl	$0x1000, %eax
+	cmp		20(%esp), %eax
+	jbe		mts_loop
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	ret
+mts_fin:
+	movl	%edx, (%ebx)
+	popl	%ebx
+	popl	%esi
+	popl	%edi
+	ret
+

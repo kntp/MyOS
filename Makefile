@@ -14,9 +14,9 @@ ipl.bin: ipl.o ipl.ls
 head.bin: head.o head.ls
 	ld -melf_i386 -nostdlib -o head.bin head.o -Thead.ls -Map=head.map
 
-boot.bin: func.o boot.o startup.o hankaku.o graphic.o dsctbl.o int.o fifo.o
+boot.bin: func.o boot.o startup.o hankaku.o graphic.o dsctbl.o int.o fifo.o mouse.o keyboard.o
 	ld -melf_i386 -nostdlib -static -o boot.bin -e Main -n -Tos.ls \
-	boot.o graphic.o dsctbl.o func.o hankaku.o int.o fifo.o $(LDLIBS) -Map=boot.map
+	boot.o graphic.o dsctbl.o func.o hankaku.o int.o fifo.o mouse.o keyboard.o $(LDLIBS) -Map=boot.map
 
 func.o: func.s
 

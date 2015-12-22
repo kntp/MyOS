@@ -4,18 +4,14 @@
 #include "dsctbl.h"
 #include "int.h"
 #include "fifo.h"
+#include "keyboard.h"
+#include "mouse.h"
 
 extern struct FIFO8 keyfifo;
 extern struct FIFO8 mousefifo;
 
-struct MOUSE_DEC {
-	unsigned char buf[3], phase;
-	int x, y, btn;
-};
-
-void enable_mouse(struct MOUSE_DEC *mdec);
-void init_keyboard(void);
-int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
+unsigned int memtest(unsigned int start, unsigned int end);
+unsigned int memtest_sub(unsigned int start, unsigned int end);
 
 void Main() {
 	struct BOOTINFO *binfo = (struct BOOTINFO *)0x0ff0;
@@ -32,6 +28,7 @@ void Main() {
 	io_out8(PIC1_IMR, 0xef);		/* allow mouse(11101111) */
 
 	init_keyboard();
+	enable_mouse(&mdec);
 
 	init_palette();
 	init_screen(binfo->vram, binfo->scrnx, binfo->scrny);
@@ -43,7 +40,9 @@ void Main() {
 	sprintf(s, "(%d, %d)", mx, my);
 	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
 
-	enable_mouse(&mdec);
+	i = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
+	sprintf(s, "memory %dMB", i);
+	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
 
 	while(1) {
 		io_cli();
@@ -99,89 +98,38 @@ void Main() {
 	}
 }
 
-#define PORT_KEYDAT				0x0060
-#define PORT_KEYSTA				0x0064
-#define PORT_KEYCMD				0x0064
-#define KEYSTA_SEND_NOTREADY	0x02
-#define KEYCMD_WRITE_MODE		0x60
-#define KBC_MODE				0x47
+#define EFLAGS_AC_BIT		0x00040000
+#define CR0_CACHE_DISABLE	0x60000000
 
-void wait_KBC_sendready(vodi)
+unsigned int memtest(unsigned int start, unsigned int end)
 {
-	/* wait until KBC can send */
-	while(1){
-		if((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
-			break;
-		}
+	char flg486 = 0;
+	unsigned int eflag, cr0, i;
+
+	/* check 386 or 486 */
+	eflag = io_load_eflags();
+	eflag |= EFLAGS_AC_BIT;	/* AC-bit = 1 */
+	io_store_eflags(eflag);
+	eflag = io_load_eflags();
+	if((eflag & EFLAGS_AC_BIT) != 0) {	/* 386, AC turns to 0 */
+		flg486 = 1;
+	}
+	eflag &= ~EFLAGS_AC_BIT; /* AC-bit = 0 */
+	io_store_eflags(eflag);
+
+	if(flg486 != 0) {
+		cr0 = load_cr0();
+		cr0 |= CR0_CACHE_DISABLE;
+		store_cr0(cr0);
 	}
 
-	return;
-}
+	i = memtest_sub(start, end);
 
-void init_keyboard(void)
-{
-	/* init keyboard controller */
-	wait_KBC_sendready();
-	io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
-	wait_KBC_sendready();
-	io_out8(PORT_KEYDAT, KBC_MODE);
-
-	return;
-}
-
-#define KEYCMD_SENDTO_MOUSE		0xd4
-#define MOUSECMD_ENABLE			0xf4
-
-void enable_mouse(struct MOUSE_DEC *mdec)
-{
-	/* enable mouse */
-	wait_KBC_sendready();
-	io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
-	wait_KBC_sendready();
-	io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
-	/* ACK is sent if success */
-	mdec->phase = 0;
-
-	return;
-}
-
-int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat)
-{
-	if(mdec->phase == 0) {
-		/* waiting mouse 0xfa */
-		if(dat == 0xfa) {
-			mdec->phase = 1;
-		}
-		return 0;
-	}else if(mdec->phase == 1) {
-		/* waiting mouse 1st byte */
-		if((dat & 0xc8) == 0x08) {
-			mdec->buf[0] = dat;
-			mdec->phase = 2;
-		}
-		return 0;
-	}else if(mdec->phase == 2) {
-		/* waiting mouse 2nd byte */
-		mdec->buf[1] = dat;
-		mdec->phase = 3;
-		return 0;
-	}else if(mdec->phase == 3) {
-		/* waiting mouse 3rd byte */
-		mdec->buf[2] = dat;
-		mdec->phase = 1;
-		mdec->btn = mdec->buf[0] & 0x07;
-		mdec->x = mdec->buf[1];
-		mdec->y = mdec->buf[2];
-		if((mdec->buf[0] & 0x10) != 0) {
-			mdec->x |= 0xffffff00;
-		}
-		if((mdec->buf[0] & 0x20) != 0) {
-			mdec->y |= 0xffffff00;
-		}
-		mdec->y = - mdec->y;
-		return 1;
+	if(flg486 != 0) {
+		cr0 = load_cr0();
+		cr0 &= ~CR0_CACHE_DISABLE;
+		store_cr0(cr0);
 	}
 
-	return -1; /* can not be reached */
+	return i;
 }
-
